@@ -1,0 +1,226 @@
+
+
+
+# ====================================================================================================
+# ======================= BUILDS OBJECTS FOR FITTING AND EVALUATING MODELS ===========================
+# ====================================================================================================
+
+# This script is called as source in a modelling script where various fields can be specified
+
+library(dplyr); library(raster); library(rgdal); library(sf)
+library(stringr); library(ggplot2); library(lubridate)
+library(magrittr); library(INLA); library(spdep)
+source("00_plot_themes.R")
+source("00_inla_setup_functions.R")
+
+# fields to specify
+# project name
+# number of bins to group climatic data
+# region to subset to (N/S/C)
+# plot_graph: plot neighbourhood matrix for inla model?
+# province_case_threshold: only keep provinces with threshold of >n cases
+# region2: subregion to subset to
+
+if(!exists("projname")){
+  projname = "temp"
+}
+
+if(!exists("n_clim_bins")){
+  n_clim_bins = 40
+}
+
+if(!exists("region")){
+  region = "all"
+}
+
+if(!exists("region2")){
+  region2 = NA
+} 
+
+if(!exists("plot_graph")){
+  plot_graph = TRUE
+}
+
+if(!exists("province_case_threshold")){
+  province_case_threshold = NA
+} else{
+  province_case_threshold = province_case_threshold
+}
+
+
+
+# ============== Set up project file name and output locations ==============
+
+# specify project name: all outputs will be saved in a directory of this name
+projname = projname
+
+# create folder structure for saving outputs
+save_dir = paste(c("./output/model_outputs/", projname, "/"), collapse="")
+if(!dir.exists(save_dir)){ 
+  dir.create(save_dir)
+  dir.create(paste(save_dir, "model_output/", sep="")) 
+  dir.create(paste(save_dir, "errors/", sep="")) 
+  dir.create(paste(save_dir, "models/", sep="")) 
+  dir.create(paste(save_dir, "fitmetrics/", sep="")) 
+}
+
+
+# ================= Build dengue dataset =================
+
+# districts to be excluded (offshore)
+# only ones with substantial dengue cases are in Kien Giang; could be worth exploring including them but this is sufficient for now
+offshore_areas = c(70711, 70596, 70666, 70671, 70382, 70154, 70339, 70273, 70355, 70698)
+
+# shapefiles: district, province, and vietnam wide
+shp = st_read("./data/shapefiles/vietnam_districts_merged.shp") %>%
+  dplyr::filter(!areaid %in% offshore_areas)
+shp_prov = st_read("./data/shapefiles/provinces.shp")
+st_crs(shp_prov) = st_crs(shp)
+shp_prov = st_crop(shp_prov, shp)
+shp_vt = st_read("./data/shapefiles/gadm36_VNM_0.shp") %>% st_crop(shp)
+
+# dengue, regions, climate, landuse, connectivity data
+dd = read.csv("./output/model_data/ModelData_Dengue_VietAll.csv") %>%
+  dplyr::left_join(read.csv("./output/model_data/ModelData_ClimaticRegions.csv")) %>%
+  dplyr::left_join(read.csv("./output/model_data/ModelData_SocioEcologicalCovar_VietAll.csv")) %>%
+  dplyr::left_join(read.csv("./output/model_data/ModelData_FlightsMonthly_VietAll.csv")) %>%
+  dplyr::left_join(read.csv("./output/model_data/ModelData_ClimateLags_VietAll.csv")) %>%
+  dplyr::left_join(read.csv("./output/model_data/ModelData_ClimateAnomalies_VietAll.csv") %>% 
+                     dplyr::filter(lubridate::year(as.Date(date))>= 1998)) %>%
+  dplyr::mutate(date = as.Date(date))
+
+# add polygon area, lat lon, region information
+#shp$area_km2 = as.vector(st_area(shp) / 10^6)
+# shp = cbind(shp, as.data.frame(st_coordinates(st_centroid(shp))) %>% dplyr::rename("longitude"=1, "latitude"=2))
+# dd = left_join(dd, shp[ , c("areaid", "latitude", "longitude")] %>% st_drop_geometry())
+# shp = left_join(shp, dd[ !duplicated(dd$areaid), c("areaid", "region1", "region2", "region3") ])
+
+# exclude all years prior to useable timeseries (because some areas have sligthly shorter timeseries)
+exclude_useable = function(x){
+  px = dd[ dd$province == x, ]
+  px = px[ px$year >= px$year_useable_from[1], ]
+}
+dd = do.call(rbind.data.frame, lapply(unique(dd$province), exclude_useable))
+
+
+
+
+# =============== group predictors for fitting nonlinear effects ==================
+
+# group predictors for fitting nonlinear effects 
+# do this before subsetting to geographical subregions to ensure consistency for prediction/projection
+
+# print("Grouping climate predictors")
+# 
+# nbins = n_clim_bins
+# dx = dd[ , grep("tmean|tmin|tmax", names(dd))]
+# names(dx) = paste(names(dx), "_g", sep="")
+# 
+# groupCols = function(x){
+#   x = dx[ , x, drop=FALSE ]
+#   x[ , 1] = inla.group(x[ , 1], n=nbins)
+#   x
+# }
+# dx = do.call(cbind.data.frame, lapply(1:ncol(dx), groupCols))
+# dd = cbind(dd, dx)
+
+
+
+# ================ subset to specified region(s), if specified =================
+
+if(region != "all"){
+  if(!region %in% unique(dd$region3)){
+    print("Region not recognised: defaulting to 'all'")
+  }
+  else{
+    dd = dd[ dd$region3 %in% c(region), ]
+    shp = shp[ shp$areaid %in% dd$areaid, ]
+    shp_prov = shp_prov[ shp_prov$provincena %in% dd$province, ]
+  }
+}
+
+
+if(!is.na(region2)){
+  if(!region2 %in% unique(dd$region2)){
+    print("Region not recognised: defaulting to 'all'")
+  }
+  else{
+    dd = dd[ dd$region2 %in% c(region2), ]
+    shp = shp[ shp$areaid %in% dd$areaid, ]
+    shp_prov = shp_prov[ shp_prov$provincena %in% dd$province, ]
+  }
+}
+
+
+
+# ============== remove all provinces with cases < specified threshold, if specified ==============
+
+if( ! is.na(province_case_threshold) ){
+  
+  if(! is.numeric(province_case_threshold)){ 
+    
+    print("Province case threshold not specifying; defaulting to no threshold")
+    
+  } else{
+      
+    provs = dd %>%
+      dplyr::group_by(province) %>%
+      dplyr::summarise(cases = sum(cases, na.rm=TRUE)) %>%
+      dplyr::filter(cases >= province_case_threshold)
+    dd = dd[ dd$province %in% provs$province, ]
+    
+    }
+}
+
+
+# ================ set up spatial neighbourhood matrix for CAR model ===================
+
+# subset shapefile and dengue cases to focal district
+shpf = shp[ shp$areaid %in% dd$areaid, ]
+
+# create neighbourhood matrix for CAR spatial
+# firstly create lookup refs for polygon ids, create neighbourhood matrix, then add lookups into dataframe
+id_ref = data.frame(areaid = shpf$areaid, polyid = 1:nrow(shpf))
+district.nb = spdep::poly2nb(as_Spatial(shpf), row.names=id_ref$polyid)
+dd = left_join(dd, id_ref)
+
+# save neighbourhood matrix with focal district (if not already existing)
+nbmatrix_name = paste(save_dir, "adjmatrix_", paste(tolower(projname), collapse="_"), sep="") 
+nb2INLA(nbmatrix_name, district.nb)
+
+# plot neighbourhood matrix if specified
+if(plot_graph){
+  xy = as.data.frame(rgeos::gCentroid(as_Spatial(shpf), byid=TRUE))
+  plot(shpf$geometry)
+  plot(district.nb, coords = cbind(xy$x, xy$y), col="red", add=T, cex=0.5)
+}
+
+
+# =============== setup covariates, transform, scale and set grouping factors ====================
+
+# defining offset as log population (in hundreds of thousands)
+# so model is estimating incidence per 100,000 inhabitants
+# along with defining fairly tight priors on intercept precision, this deals with numerical challenges of fitting when estimating incidence per inhabitant
+#dd$logpop = log(dd$population_gpw/100000) 
+dd$logpop = log(dd$population_census/100000)
+
+# key covariates (incl. dengue month: starts in April)
+dd$logpopdens = log(dd$popdens_census)
+dd$month = lubridate::month(dd$date)
+monthdengue = data.frame(month = c(5:12, 1:4), monthdengue = 1:12)
+dd = left_join(dd, monthdengue)
+
+# replicate variables for grouping
+areaidx = factor(dd$areaid, levels=unique(dd$areaid)[ order(unique(dd$areaid)) ], ordered=TRUE)
+dd$areaidx = as.integer(areaidx)
+dd$areaidy = as.integer(areaidx)
+dd$yearx = as.integer(as.factor(dd$year))
+dd$provincex = as.integer(factor(dd$province, levels=unique(dd$province)[ order(unique(dd$province)) ], ordered=TRUE))
+dd$provincey = dd$provincex
+
+# different levels of region 
+dd$regionx = as.integer(as.factor(dd$region1))
+dd$regiony = as.integer(as.factor(dd$region2))
+dd$regionz = as.integer(as.factor(dd$region3))
+dd$regionf = as.integer(as.factor(dd$region4))
+

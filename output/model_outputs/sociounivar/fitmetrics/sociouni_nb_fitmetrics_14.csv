@@ -1,0 +1,2 @@
+"modid","fx","effect_type","formula","model_filename","modname","dic","waic","waic_neffp","mae","logscore","cpo_fail"
+"14","urbanexp3_log","linear","y ~ 1 + offset(logpop) + f(month, model='rw1', hyper=hyper2.rw, cyclic=TRUE, scale.model=TRUE, constr=TRUE, replicate=provincex) + f(polyid, model='bym2', graph=nbmatrix_name, replicate=yearx, scale.model=TRUE, constr=TRUE, adjust.for.con.comp=TRUE, hyper=hyper.bym2) + urbanexp3_log","sociouni_nb_model_14.R","urbanexp3_log",606127.626794781,607665.790409603,11557.1406197289,5.94700182512453,1.76883145054287,0

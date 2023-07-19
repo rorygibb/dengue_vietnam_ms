@@ -1,0 +1,26 @@
+[general]
+creator=R package 'raster'
+created=2023-03-29 13:46:42
+[data]
+datatype=FLT4S
+byteorder=little
+nbands=12
+bandorder=BIL
+minvalue=1.54898323551301:1.91417709418706:2.27824313986686:2.1787239253521:1.58823972363626:1.89951988259951:2.13507619980843:1.81360671981688:2.01415536602338:2.12637905920705:1.24536930123965:1.64790526128584
+maxvalue=14.490288149926:15.2040639264243:17.3095335498933:14.5262306054433:12.4130340853045:10.0016593297323:8.54279899597168:9.3416362577869:9.06805814107259:7.92931326743095:11.0216797192891:13.7043558551419
+nodatavalue=-3.4e+38
+[legend]
+legendtype=
+values=
+color=
+[description]
+layername=Tdrange_2021.01.01:Tdrange_2021.02.01:Tdrange_2021.03.01:Tdrange_2021.04.01:Tdrange_2021.05.01:Tdrange_2021.06.01:Tdrange_2021.07.01:Tdrange_2021.08.01:Tdrange_2021.09.01:Tdrange_2021.10.01:Tdrange_2021.11.01:Tdrange_2021.12.01
+[georeference]
+nrows=166
+ncols=101
+xmin=99.95
+ymin=7.45
+xmax=110.05
+ymax=24.05
+projection=+proj=longlat +datum=WGS84 +no_defs
+wkt=GEOGCRS["unknown",    DATUM["World Geodetic System 1984",        ELLIPSOID["WGS 84",6378137,298.257223563,            LENGTHUNIT["metre",1]],        ID["EPSG",6326]],    PRIMEM["Greenwich",0,        ANGLEUNIT["degree",0.0174532925199433],        ID["EPSG",8901]],    CS[ellipsoidal,2],        AXIS["longitude",east,            ORDER[1],            ANGLEUNIT["degree",0.0174532925199433,                ID["EPSG",9122]]],        AXIS["latitude",north,            ORDER[2],            ANGLEUNIT["degree",0.0174532925199433,                ID["EPSG",9122]]]]

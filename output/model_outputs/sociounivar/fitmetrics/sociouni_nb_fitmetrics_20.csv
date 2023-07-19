@@ -1,0 +1,2 @@
+"modid","fx","effect_type","formula","model_filename","modname","dic","waic","waic_neffp","mae","logscore","cpo_fail"
+"20","tmin_annualmean_s","linear","y ~ 1 + offset(logpop) + f(month, model='rw1', hyper=hyper2.rw, cyclic=TRUE, scale.model=TRUE, constr=TRUE, replicate=provincex) + f(polyid, model='bym2', graph=nbmatrix_name, replicate=yearx, scale.model=TRUE, constr=TRUE, adjust.for.con.comp=TRUE, hyper=hyper.bym2) + tmin_annualmean_s","sociouni_nb_model_20.R","tmin_annualmean_s",605246.775315317,606966.590031185,11377.6429077571,5.95355911696625,1.76631031135821,0

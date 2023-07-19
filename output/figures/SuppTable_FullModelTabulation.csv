@@ -1,0 +1,16 @@
+"Parameter","Type","Median","CI_0.025","CI_0.975"
+"Intercept","Fixed effect",-1.843,-2.082,-1.607
+"Tmean coolest month","Fixed effect",1.124,1.005,1.244
+"Gravity (log)","Fixed effect",0.287,0.227,0.348
+"Built-up land","Fixed effect",-0.143,-0.195,-0.092
+"Urban expansion rate (10 year, log)","Fixed effect",-0.251,-0.288,-0.213
+"Traffic per inhab (log)","Fixed effect",0.459,0.41,0.508
+"Size (1/overdisp) for neg. binom","Hyperparameter",1.592,1.573,1.616
+NA,"Hyperparameter",3.969,3.534,4.645
+"Precision for District (BYM2)","Hyperparameter",0.13,0.124,0.138
+"Phi for District (BYM2)","Hyperparameter",0.905,0.894,0.914
+"Precision for Hygienic toilet (RW2)","Hyperparameter",23.834,11.224,57.789
+"Precision for Piped water (RW2)","Hyperparameter",14.604,7.31,29.163
+"Precision for Tmean 1m (RW2)","Hyperparameter",5.719,4.01,7.661
+"Precision for SPEI-1 1m (RW2)","Hyperparameter",35.582,20.53,65.605
+"Precision for SPEI-6 5m (RW2)","Hyperparameter",18.973,9.272,44.47

@@ -1,0 +1,2 @@
+"modid","fx","effect_type","formula","model_filename","modname","dic","waic","waic_neffp","mae","logscore","cpo_fail"
+"18","flushindoor_s","linear","y ~ 1 + offset(logpop) + f(month, model='rw1', hyper=hyper2.rw, cyclic=TRUE, scale.model=TRUE, constr=TRUE, replicate=provincex) + f(polyid, model='bym2', graph=nbmatrix_name, replicate=yearx, scale.model=TRUE, constr=TRUE, adjust.for.con.comp=TRUE, hyper=hyper.bym2) + flushindoor_s","sociouni_nb_model_18.R","flushindoor_s",604598.014163631,606373.566284777,11174.4595778254,5.95343080533804,1.76435252189067,122

@@ -1,0 +1,2 @@
+"modid","covar","fx","formula","model_filename","modname","dic","waic","waic_neffp","mae","logscore","cpo_fail"
+"baseline","baseline","baseline","y ~ 1 + offset(logpop) + f(month, model='rw1', hyper=hyper2.rw, cyclic=TRUE, scale.model=TRUE, constr=TRUE, replicate=provincex) + f(polyid, model='bym2', graph=nbmatrix_name, replicate=yearx, scale.model=TRUE, constr=TRUE, adjust.for.con.comp=TRUE, hyper=hyper.bym2)","climuni_nb_model_baseline.R","baseline",606146.001484403,607670.235319028,11558.0983505749,5.94702864743989,1.76885430638988,0
