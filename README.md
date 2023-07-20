@@ -7,13 +7,17 @@ This repository contains the full modelling pipeline scripts to implement the an
 ## Key locations within repository
 
  ↳ scripts_full → _complete codebase for data processing and analysis across all of Vietnam_
+ 
  ↳ scripts_example → _a subset of numerically-ordered scripts to implement key sections of the pipeline for example provinces_
 
  ↳ data → _contains dengue incidence data (4 provinces), climate and shapefiles_
  
  ↳ output → covariates → _csvs of socio-environmental and climatic covariates for all Vietnam districts_
+ 
  ↳ output → figures → _figures for MS_
+ 
  ↳ output → model_data → _compiled csvs of dengue and covariates for use in modelling scripts_
+ 
  ↳ output → model_outputs → _where key outputs from modelling pipeline are stored_
 
 ## Dengue data for 4 provinces
