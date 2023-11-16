@@ -42,7 +42,7 @@ st_crs(shp_prov) = st_crs(shp)
 shp_prov = st_crop(shp_prov, shp)
 rr = read.csv("./data/shapefiles/regions_lookup.csv")
 shp_prov = left_join(shp_prov, rr[ , c("provincena", "region")])
-shp_vt = st_read("./data/shapefiles/gadm36_VNM_0.shp") %>%
+shp_vt = st_read("./data/shapefiles/vt_national.shp") %>%
   st_crop(shp)
 
 # dengue, regions, climate, landuse, connectivity data
@@ -177,7 +177,7 @@ plotRF = function(x){
     rr,
     data.frame(
       effect = c("flushany_g", "water_g", "tmean_1m_g", "spei1_1m_g", "spei6_5m_g"),
-      effname = c("Hygienic toilet access\n(indoor/outdoor)", "Piped or drill well\nwater access", "Tmean (1-month lag)", "SPEI-1 (1-month lag)", "SPEI-6 (5-month lag)"),
+      effname = c("Hygienic toilet access\n(indoor/outdoor)", "Piped or borehole-derived\nwater access", "Tmean (1-month lag)", "SPEI-1 (1-month lag)", "SPEI-6 (5-month lag)"),
       type = c("Infrastructure", "Infrastructure", "Climate", "Climate", "Climate"),
       units = c("Prop. households", "Prop. households", "Tmean (°C)", "SPEI-1", "SPEI-6")
     )
@@ -209,12 +209,12 @@ plotRF = function(x){
       geom_density(aes(tmean_1m), fill=colx, alpha=0.2,  size=0.4, color="grey50") + 
       theme_classic() +
       theme(plot.title = element_text(size=12.25, hjust=0.5),
-            axis.text.y = element_text(size=10.25),
+            axis.text.y = element_text(size=8),
             axis.text.x = element_text(size=10.25),
             axis.title = element_text(size=11), 
-            axis.title.y = element_text(size=11, color="white")) + 
+            axis.title.y = element_text(size=10, color="black")) + 
       xlab(rr$units[1]) + 
-      ylab("RR") + 
+      ylab("Density") + 
       scale_y_continuous(n.breaks=3)
     
     px = gridExtra::grid.arrange(px + theme(axis.title.x = element_blank()), 
@@ -232,12 +232,12 @@ plotRF = function(x){
             axis.text.y = element_text(size=10.25),
             axis.text.x = element_text(size=10.25),
             axis.title = element_text(size=11), 
-            axis.title.y = element_blank()) + 
+            axis.title.y = element_text(size=10, color="black")) + 
       xlab(rr$units[1]) + 
-      ylab("") + 
+      ylab("Density") + 
       scale_y_continuous(n.breaks=2)
     
-    px = gridExtra::grid.arrange(px + theme(axis.title = element_blank()), 
+    px = gridExtra::grid.arrange(px + theme(axis.title.x = element_blank()), 
                                  densx, nrow=2, heights=c(0.8, 0.25))
   }
   
@@ -252,12 +252,12 @@ plotRF = function(x){
             axis.text.y = element_text(size=10.25),
             axis.text.x = element_text(size=10.25),
             axis.title = element_text(size=11), 
-            axis.title.y = element_blank()) + 
+            axis.title.y = element_text(size=10, color="black")) + 
       xlab(rr$units[1]) + 
-      ylab("") + 
+      ylab("Density") + 
       scale_y_continuous(n.breaks=3)
     
-    px = gridExtra::grid.arrange(px + theme(axis.title = element_blank()), 
+    px = gridExtra::grid.arrange(px + theme(axis.title.x = element_blank()), 
                                  densx, nrow=2, heights=c(0.8, 0.25))
   }  
   
@@ -267,63 +267,78 @@ plotRF = function(x){
 prf = lapply(1:length(effs), plotRF)
 
 
+library(ggh4x)
+
 # fixed effects plot
-pfx1 = extractFixedINLA(mx, model_name="mod", transform=TRUE) %>%
+pfx = extractFixedINLA(mx, model_name="mod", transform=TRUE) %>%
   dplyr::filter(param != "Intercept") %>%
-  dplyr::filter(!grepl("province|areaid|tmean", param)) %>%
+  dplyr::filter(!grepl("province|areaid", param)) %>%
   dplyr::left_join(
     data.frame(
-      param=c("gravityf_log", "urban_s", "urbanexp10_log", "traffic_kmperinhab_log"),
-      paramname = c("Gravity\n(log)", "Built-up\nland", "Urban\nexpansion\nrate (log)", "Traffic\nper inhab\n(log)"),
-      type = c("Mobility", "Urbanisation", "Urbanisation", "Mobility")
+      param=c("tmean_coolestmonth_s", "gravityf_log", "urban_s", "urbanexp10_log", "traffic_kmperinhab_log"),
+      paramname = c("Tmean\ncoolest\nmonth", "Gravity\n(log)", "Built-up\nland", "Urban\nexpansion\nrate (log)", "Traffic\nper inhab\n(log)"),
+      type = c("Climate", "Socio-env.", "Socio-env.", "Socio-env.", "Socio-env."),
+      facet = c("Slope (risk ratio) ", "Slope (risk ratio)", "Slope (risk ratio)", "Slope (risk ratio)", "Slope (risk ratio)")
     )
   ) %>%
-  dplyr::mutate(paramname = factor(paramname, levels=c("Gravity\n(log)", "Traffic\nper inhab\n(log)",  "Built-up\nland", "Urban\nexpansion\nrate (log)"), ordered=TRUE)) %>%
+  dplyr::mutate(paramname = factor(paramname, levels=c("Tmean\ncoolest\nmonth", "Gravity\n(log)", "Traffic\nper inhab\n(log)",  "Built-up\nland", "Urban\nexpansion\nrate (log)"), ordered=TRUE),
+                facet=factor(facet, levels=c("Slope (risk ratio) ", "Slope (risk ratio)"), ordered=TRUE)) %>%
   ggplot() +
-  geom_point(aes(paramname, mean), size=2, col=col_socio) +
-  geom_linerange(aes(paramname, ymin=lower, ymax=upper), col=col_socio) +
+  geom_point(aes(paramname, mean, col=type), size=2) +
+  geom_linerange(aes(paramname, ymin=lower, ymax=upper, col=type), show.legend=FALSE) +
   geom_hline(yintercept=1, lty=2) +
   theme_classic() +
-  scale_y_continuous(limits=c(0.7, 1.8), breaks=c(0.75, 1, 1.25, 1.5, 1.75), labels=c(0.75, 1, 1.25, 1.5, 1.75)) +
+  scale_color_manual(values=c("Climate"=col_clim, "Socio-env."=col_socio)) +
+  #scale_y_continuous(limits=c(0.7, 1.8), breaks=c(0.75, 1, 1.25, 1.5, 1.75), labels=c(0.75, 1, 1.25, 1.5, 1.75)) +
   ylab("Slope (risk ratio)") + 
   xlab("") + 
   #scale_color_viridis_d(begin=0.2, end=0.6) + 
   theme(axis.title.x = element_blank(),
         axis.text.x = element_text(angle=0, size=11),
         axis.title.y = element_blank(),
-        #axis.title.y = element_text(size=12),
-        axis.text.y = element_text(size=10))
+        #axis.title.y = element_text(size=11),
+        axis.text.y = element_text(size=10)) +
+  facet_wrap(~facet, ncol=2, scales="free", strip.position="left") +
+  force_panelsizes(cols = c(0.2, 1)) +
+  #ggtitle("Waffle\nwaffles") +
+  theme(#strip.text = element_blank(),
+        strip.text = element_text(size=11),
+        #plot.title = element_text(size=12.15, color="white"),
+        strip.background = element_blank(),
+        strip.placement="outside",
+        legend.text = element_text(size=10.5), legend.title = element_blank(), #legend.background=element_rect(fill=NA, color="grey70"),
+        legend.position=c(0.83, 0.9)) + guides(colour = guide_legend(override.aes = list(size=5, alpha=0.8)))
 
-pfx2 = extractFixedINLA(mx, model_name="mod", transform=TRUE) %>%
-  dplyr::filter(param != "Intercept") %>%
-  dplyr::filter(grepl("tmean", param)) %>%
-  dplyr::left_join(
-    data.frame(
-      param=c("tmean_coolestmonth_s", "urban_s", "urbanexp10_log", "traffic_kmperinhab_log"),
-      paramname = c("Tmean\ncoolest\nmonth", "Built-up\nland", "Urban\nexpansion\nrate (log)", "Traffic\nper inhab\n(log)"),
-      type = c("Climate", "Urbanisation", "Urbanisation", "Mobility")
-    )
-  ) %>%
-  ggplot() +
-  geom_point(aes(paramname, mean), size=2, color=col_clim) +
-  geom_linerange(aes(paramname, ymin=lower, ymax=upper), color=col_clim) +
-  geom_hline(yintercept=1, lty=2) +
-  theme_classic() +
-  ylab("Slope (risk ratio)") + 
-  xlab("") + 
-  #scale_color_viridis_d(begin=0.2, end=0.6) + 
-  theme(axis.title.x = element_blank(),
-        axis.text.x = element_text(angle=0, size=11),
-        axis.text.y = element_text(size=10),
-        axis.title.y = element_text(size=11))
+# pfx2 = extractFixedINLA(mx, model_name="mod", transform=TRUE) %>%
+#   dplyr::filter(param != "Intercept") %>%
+#   dplyr::filter(grepl("tmean", param)) %>%
+#   dplyr::left_join(
+#     data.frame(
+#       param=c("tmean_coolestmonth_s", "urban_s", "urbanexp10_log", "traffic_kmperinhab_log"),
+#       paramname = c("Tmean\ncoolest\nmonth", "Built-up\nland", "Urban\nexpansion\nrate (log)", "Traffic\nper inhab\n(log)"),
+#       type = c("Climate", "Urbanisation", "Urbanisation", "Mobility")
+#     )
+#   ) %>%
+#   ggplot() +
+#   geom_point(aes(paramname, mean), size=2, color=col_clim) +
+#   geom_linerange(aes(paramname, ymin=lower, ymax=upper), color=col_clim) +
+#   geom_hline(yintercept=1, lty=2) +
+#   theme_classic() +
+#   ylab("Slope (risk ratio)") + 
+#   xlab("") + 
+#   #scale_color_viridis_d(begin=0.2, end=0.6) + 
+#   theme(axis.title.x = element_blank(),
+#         axis.text.x = element_text(angle=0, size=11),
+#         axis.text.y = element_text(size=10),
+#         axis.title.y = element_text(size=11))
 
 # fixed effects
-pfx = gridExtra::grid.arrange(pfx2, pfx1, widths=c(0.3, 1))
+#pfx = gridExtra::grid.arrange(pfx2, pfx1, widths=c(0.3, 1))
 
 # row 1: fixed + socioenv
 pc1 = gridExtra::grid.arrange(pfx, 
                               prf[[1]], 
-                              prf[[2]] + ylab(""), nrow=1, widths=c(1.2, 0.9, 0.9))
+                              prf[[2]], nrow=1, widths=c(1.2, 0.9, 0.9))
 
 # row 2: climatic
 pc2 = gridExtra::grid.arrange(prf[[3]], 
@@ -335,11 +350,41 @@ pcomb = gridExtra::grid.arrange(pc1, pc2, nrow=2, heights=c(1, 1.15))
 pcomb = ggpubr::as_ggplot(pcomb)  +
   cowplot::draw_plot_label(label = c("a", "b", "c", "d", "e", "f", "g"), 
                            fontface = "bold", size = 20, 
-                           x = c(-0.005, 0.13, 0.442, 0.75, 0.05, 0.375, 0.705), y = c(1, 1, 0.97, 0.97, 0.53, 0.53, 0.53))
-ggsave(pcomb, file="./output/figures/Figure3_DengueDrivers.png", dpi=600, device="png", units="in", width=10.8, height=7.2, scale=0.95)
+                           x = c(0.01, 0.14, 0.442, 0.75, 0.04, 0.39, 0.715), y = c(1, 1, 0.97, 0.97, 0.53, 0.53, 0.53))
+ggsave(pcomb, file="./output/figures/Figure3_DengueDrivers.png", dpi=600, device="png", units="in", width=11.5, height=7.2, scale=0.95)
+ggsave(pcomb, file="./output/figures/Figure3_DengueDrivers.pdf", device="pdf", units="in", width=11.5, height=7.2, scale=0.95)
 
 
 
+# ================= Visualise ST random effects ====================
+
+rf = extractRandomINLA(mx$summary.random$polyid, effect_name ="", model_is_bym = TRUE) %>%
+  dplyr::filter(component == "uv_joint") %>%
+  dplyr::left_join(data.frame(group=1:23, year=1998:2020)) %>%
+  dplyr::left_join(
+    dd %>% dplyr::select(polyid, areaid, year_useable_from) %>% distinct(),
+    by=c("value"="polyid")
+  ) %>%
+  dplyr::mutate(mean = replace(mean, year < year_useable_from, NA)) 
+
+#cs = colorRampPalette(RColorBrewer::brewer.pal(11, "BrBG"))(200)
+lims = max(abs(rf$mean), na.rm=TRUE)
+lims = c(-lims, lims)
+
+p1 = shp %>%
+  dplyr::select(areaid) %>%
+  dplyr::full_join(rf) %>%
+  sf::st_as_sf() %>%
+  ggplot()+
+  geom_sf(aes(fill=mean), color=NA) + 
+  geom_sf(data = shp_vt, color="grey20", size=0.5, fill=NA) + 
+  scale_fill_gradientn(colors=rev(colorRampPalette(MetBrewer::met.brewer("Benedictus", 11))(200)), na.value="white", limits=lims, name="Posterior\nmean") +
+  theme_void() + 
+  facet_wrap(~year, nrow=3) +
+  theme(strip.text = element_text(size=13), 
+        legend.text = element_text(size=11),
+        legend.title = element_text(size=12))
+ggsave(p1, file="./output/figures/SuppFigure_STRanefs.jpg", device="jpg", units="in", dpi=300, width=12, height=9, scale=0.85)
 
 
 # ================== Tabulate full model param results ===============

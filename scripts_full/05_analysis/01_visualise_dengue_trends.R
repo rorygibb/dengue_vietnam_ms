@@ -40,7 +40,7 @@ st_crs(shp_prov) = st_crs(shp)
 shp_prov = st_crop(shp_prov, shp)
 rr = read.csv("./data/shapefiles/regions_lookup.csv")
 shp_prov = left_join(shp_prov, rr[ , c("provincena", "region")])
-shp_vt = st_read("./data/shapefiles/gadm36_VNM_0.shp") %>%
+shp_vt = st_read("./data/shapefiles/vt_national.shp") %>%
   st_crop(shp)
 
 # dengue, regions, climate, landuse, connectivity data
@@ -212,7 +212,12 @@ p2 = ggplot() +
   theme(legend.title = element_text(size=14),
         legend.text = element_text(size=14),
         strip.text = element_text(size=16),
-        legend.position="right")
+        legend.position="right", 
+        axis.line = element_line(color="white"),
+        axis.text = element_text(size=9, color="white"),
+        axis.title = element_text(size=14, color="white")) + 
+  xlab("Longitude") + ylab("Latitude")
+
 
 
 
@@ -278,7 +283,11 @@ p3 = shp %>%
   theme(legend.title = element_text(size=14),
         legend.text = element_text(size=14),
         strip.text = element_text(size=16, color="white"),
-        legend.position=c(0.82, 0.5))
+        legend.position=c(0.82, 0.5), 
+        axis.line = element_line(color="grey40"),
+        axis.text = element_text(size=9, color="grey20"),
+        axis.title = element_text(size=14, color="grey10")) + 
+  xlab("Longitude") + ylab("Latitude")
 
 
 
@@ -292,4 +301,5 @@ pc = ggpubr::as_ggplot(pc)  +
                            x = c(0, 0.66), y = c(0.89, 0.89))
 ggsave(pc, file="./output/figures/Figure1_DengueTrends.jpg", device="jpeg", width=17, height=7.5, units="in", dpi=900)
 
+ggsave(pc, file="./output/figures/Figure1_DengueTrends.pdf", device="pdf", width=17, height=7.5, units="in")
 

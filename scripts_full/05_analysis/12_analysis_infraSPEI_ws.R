@@ -262,8 +262,8 @@ p3a = dd %>%
   geom_histogram(aes(x=spei6_5m, y=..count../sum(..count..), group=water_c, fill=water_c), col=NA, alpha=0.7, size=1, bins=45) + 
   theme_classic() + 
   theme(axis.title.x = element_text(size=14), 
-        axis.title.y = element_text(size=8, color="white"),
-        axis.text.y= element_text(size=10),
+        axis.title.y = element_text(size=13, color="black"),
+        axis.text.y= element_text(size=8),
         axis.text.x= element_text(size=12),
         legend.position="none") + 
   xlab("SPEI-6 (5m lag)") + 
@@ -434,7 +434,7 @@ sp = scen %>%
         panel.grid.minor = element_line(color="grey95", size=0.3),
         axis.line.x = element_blank(),
         axis.ticks.x = element_blank(),
-        axis.text = element_text(size=11.5),
+        axis.text = element_text(size=10),
         axis.title.y = element_text(size=12.8)) + 
   #scale_y_continuous(breaks = seq(-2, 2, by=1), labels=seq(-2, 2, by=1)) +
   scale_y_continuous(labels = scaleFUN) +
@@ -458,7 +458,7 @@ pp = scen %>%
     panel.grid.major = element_line(color="grey90", size=0.5),
     panel.grid.minor = element_line(color="grey95", size=0.3),
     axis.text.x = element_text(size=12),
-    axis.text.y = element_text(size=12.88),
+    axis.text.y = element_text(size=12),
     axis.title.x = element_text(size=13.2),
     axis.title.y = element_text(size=13.2),
     legend.title = element_blank(),
@@ -483,6 +483,7 @@ fig_fin = ggpubr::as_ggplot(fig_fin)  +
 ggsave(fig_fin, file="./output/figures/Figure6_InfraSPEI_scenarios.png", device="png", units="in", width=13, height=6.35, dpi=600, scale=0.9)
 
 
+ggsave(fig_fin, file="./output/figures/Figure6_InfraSPEI_scenarios.pdf", device="pdf", units="in", width=13, height=6.35, scale=0.9)
 
 
 

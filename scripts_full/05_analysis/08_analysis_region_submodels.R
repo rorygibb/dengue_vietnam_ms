@@ -34,7 +34,7 @@ st_crs(shp_prov) = st_crs(shp)
 shp_prov = st_crop(shp_prov, shp)
 rr = read.csv("./data/shapefiles/regions_lookup.csv")
 shp_prov = left_join(shp_prov, rr[ , c("provincena", "region")])
-shp_vt = st_read("./data/shapefiles/gadm36_VNM_0.shp") %>%
+shp_vt = st_read("./data/shapefiles/vt_national.shp") %>%
   st_crop(shp)
 
 # dengue, regions, climate, landuse, connectivity data
@@ -251,5 +251,5 @@ pc2 = gridExtra::grid.arrange(prf[[3]],
 pc = gridExtra::grid.arrange(pc1, pc2, nrow=2, heights=c(1.1, 1))
 
 # combine 
-ggsave(pc, file="./output/figures/SuppFigure_SubRegionModels.png", device="png", dpi=300, width=14, height=8.3, units="in", scale=0.85)
+ggsave(pc, file="./output/figures/SuppFigure_SubRegionModels.png", device="png", dpi=600, width=15, height=8.3, units="in", scale=0.85)
 

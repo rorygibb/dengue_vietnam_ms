@@ -58,7 +58,7 @@ oos_df = oos_df %>%
                  "Traffic", "SPEI-1 (1m)", "Built-up", "Gravity", "Full model", "SPEI-6 (4m)"),
       vartype = c("Baseline (all)", "Infrastructure", "Urbanisation", "Infrastructure", "Climate", "Climate", "Mobility", "Climate",
                "Urbanisation", "Mobility", "Full", "Climate"),
-      vartype2 = c("Baseline", "Socio", "Socio", "Socio", "Clim", "Clim", "Socio", "Clim", "Socio", "Socio", "Full", "Clim")
+      vartype2 = c("Baseline", "Socio-env.", "Socio-env.", "Socio-env.", "Climate", "Climate", "Socio-env.", "Climate", "Socio-env.", "Socio-env.", "Full", "Climate")
     )
   )
 
@@ -109,12 +109,15 @@ p1 = oos_df %>%
         axis.text.y = element_text(size=12, color="black"), 
         axis.text.x = element_text(size=13), 
         axis.title = element_text(size=15),
-        legend.position="none") + 
+        #legend.position="bottom",
+        legend.position = c(0.92, 0.2), #legend.background = element_blank(),
+        legend.text = element_text(size=14), legend.title = element_blank()) + 
   facet_wrap(~holdout_type, scales="free_x") +
   coord_flip() +
   scale_color_manual(
-    values=c("Baseline"="black", "Clim"=col_clim, "Socio"=col_socio)
-  )
+    values=c("Baseline"="black", "Climate"=col_clim, "Socio-env."=col_socio)
+  ) +
+  guides(colour = guide_legend(override.aes = list(size=5, alpha=0.7)))
 
 p1 = gridExtra::grid.arrange(p1)
 p1 = ggpubr::as_ggplot(p1)  +
@@ -122,7 +125,8 @@ p1 = ggpubr::as_ggplot(p1)  +
                            fontface = "bold", size = 22.5, 
                            x = c(0.121, 0.415, 0.705), y = c(0.91, 0.91, 0.91))
 
-ggsave(p1, file="./output/figures/Figure4_PredictiveHoldouts.png", device="png", units="in", dpi=150, width=12, height=4)
+ggsave(p1, file="./output/figures/Figure4_PredictiveHoldouts.png", device="png", units="in", dpi=900, width=12, height=4)
+ggsave(p1, file="./output/figures/Figure4_PredictiveHoldouts.pdf", device="pdf", units="in", width=12, height=4)
 
 
 
@@ -281,7 +285,7 @@ oos_df = r_oos %>%
                  "Traffic", "SPEI-1 (1m)", "Built-up", "Gravity", "Full model", "SPEI-6 (4m)"),
       vartype = c("Baseline (all)", "Infrastructure", "Urbanisation", "Infrastructure", "Climate", "Climate", "Mobility", "Climate",
                   "Urbanisation", "Mobility", "Full", "Climate"),
-      vartype2 = c("Baseline", "Socio", "Socio", "Socio", "Clim", "Clim", "Socio", "Clim", "Socio", "Socio", "Full", "Clim")
+      vartype2 = c("Baseline", "Socio-env.", "Socio-env.", "Socio-env.", "Climate", "Climate", "Socio-env.", "Climate", "Socio-env.", "Socio-env.", "Full", "Climate")
     )
   )
 
@@ -308,8 +312,6 @@ sm_summary = oos_df %>%
 
 col_clim = viridis::viridis(200)[40]
 col_socio= viridis::viridis(200)[105]
-
-
 
 oos_df$holdout_type = factor(oos_df$holdout_type, levels=c("Spatial", "Spatiotemporal", "Seasonal"), ordered=TRUE)
 sm_summary$holdout_type = factor(sm_summary$holdout_type, levels=c("Spatial", "Spatiotemporal", "Seasonal"), ordered=TRUE)
@@ -351,7 +353,7 @@ p1 = od_n %>%
   facet_wrap(~holdout_type, scales="free_x") +
   coord_flip() +
   scale_color_manual(
-    values=c("Baseline"="black", "Clim"=col_clim, "Socio"=col_socio)
+    values=c("Baseline"="black", "Climate"=col_clim, "Socio-env."=col_socio)
   ) +
   ggtitle("Northern Vietnam\n(North Central, Red River Delta, Northeast, Northwest)")
 
@@ -387,22 +389,24 @@ p2 = od_n %>%
         axis.text.x = element_text(size=13), 
         axis.title = element_text(size=15),
         plot.title = element_text(size=16, hjust=0.5),
-        legend.position="none") + 
+        legend.position="bottom",
+        legend.text = element_text(size=15),
+        legend.title = element_blank()) + 
   facet_wrap(~holdout_type, scales="free_x") +
   coord_flip() +
   scale_color_manual(
-    values=c("Baseline"="black", "Clim"=col_clim, "Socio"=col_socio)
+    values=c("Baseline"="black", "Climate"=col_clim, "Socio-env."=col_socio)
   ) +
-  ggtitle("Southern Vietnam\n(Mekong Delta, Southeast, South Central Coast, Central Highlands)")
+  ggtitle("Southern Vietnam\n(Mekong Delta, Southeast, South Central Coast, Central Highlands)") +
+  guides(colour = guide_legend(override.aes = list(size=5, alpha=0.7)))
 
 
-
-p1 = gridExtra::grid.arrange(p1, p2, nrow=2)
+pc = gridExtra::grid.arrange(p1, p2, nrow=2, heights=c(1, 1.1))
 # p1 = ggpubr::as_ggplot(p1)  +
 #   cowplot::draw_plot_label(label = c("a", "b", "c"), 
 #                            fontface = "bold", size = 22.5, 
 #                            x = c(0.121, 0.415, 0.705), y = c(0.91, 0.91, 0.91))
 # 
-ggsave(p1, file="./output/figures/SuppFigure_PredictiveHoldouts_Regional.png", device="png", units="in", dpi=600, width=12, height=8)
+ggsave(pc, file="./output/figures/SuppFigure_PredictiveHoldouts_Regional.png", device="png", units="in", dpi=600, width=12, height=8)
 
 

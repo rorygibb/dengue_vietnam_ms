@@ -41,7 +41,7 @@ st_crs(shp_prov) = st_crs(shp)
 shp_prov = st_crop(shp_prov, shp)
 rr = read.csv("./data/shapefiles/regions_lookup.csv")
 shp_prov = left_join(shp_prov, rr[ , c("provincena", "region")])
-shp_vt = st_read("./data/shapefiles/gadm36_VNM_0.shp") %>%
+shp_vt = st_read("./data/shapefiles/vt_national.shp") %>%
   st_crop(shp)
 
 # dengue, regions, climate, landuse, connectivity data
@@ -56,9 +56,6 @@ dd = read.csv("./output/model_data/ModelData_Dengue_VietAll.csv") %>%
 shp = cbind(shp, as.data.frame(st_coordinates(st_centroid(shp))) %>% dplyr::rename("longitude"=1, "latitude"=2))
 dd = left_join(dd, shp[ , c("areaid", "latitude", "longitude")] %>% st_drop_geometry())
 shp = left_join(shp, dd[ !duplicated(dd$areaid), c("areaid", "region1", "region2", "region3") ])
-
-
-
 
 
 
@@ -126,8 +123,8 @@ varnames = c("Mean population density\n(inhabitants per km2)",
              "Built-up land area\n(km2)", 
              "Piped or drilled well water\n(% households)", 
              "Mean gravity flux",
-             "Tmean annual mean\n(?C)",
-             "Tmin coolest month\n(?C)", 
+             "Tmean annual mean\n(°C)",
+             "Tmin coolest month\n(°C)", 
              "Precipitation annual\n(millimetres)")
 
 region_facs = 
@@ -207,8 +204,7 @@ p2 = shp %>%
 
 pc = gridExtra::grid.arrange(p1, p2, ncol=2, widths=c(1, 0.5))
 ggsave(pc, file="./output/figures/Figure2_SocioEnvironmentTrends.jpg", device="jpg", units="in", dpi=600, width=11, height=7, scale=0.9)
-
-
+ggsave(pc, file="./output/figures/Figure2_SocioEnvironmentTrends.pdf", device="pdf", units="in", width=11, height=7, scale=0.9)
 
 
 
@@ -276,7 +272,7 @@ p1 = dd %>%
   plot_theme + facet_wrap(~regionx, ncol=1) + 
   theme(axis.title.x = element_blank(),
         axis.title.y = element_text(size=13.5)) + 
-  ylab("Tmean (?C)") + xlab("Month") +
+  ylab("Tmean (°C)") + xlab("Month") +
   ggtitle("Tmean")
 
 # precip by region

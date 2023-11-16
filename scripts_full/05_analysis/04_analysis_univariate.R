@@ -34,7 +34,7 @@ st_crs(shp_prov) = st_crs(shp)
 shp_prov = st_crop(shp_prov, shp)
 rr = read.csv("./data/shapefiles/regions_lookup.csv")
 shp_prov = left_join(shp_prov, rr[ , c("provincena", "region")])
-shp_vt = st_read("./data/shapefiles/gadm36_VNM_0.shp") %>%
+shp_vt = st_read("./data/shapefiles/vt_national.shp") %>%
   st_crop(shp)
 
 # dengue, regions, climate, landuse, connectivity data

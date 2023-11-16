@@ -39,7 +39,7 @@ st_crs(shp_prov) = st_crs(shp)
 shp_prov = st_crop(shp_prov, shp)
 rr = read.csv("./data/shapefiles/regions_lookup.csv")
 shp_prov = left_join(shp_prov, rr[ , c("provincena", "region")])
-shp_vt = st_read("./data/shapefiles/gadm36_VNM_0.shp") %>%
+shp_vt = st_read("./data/shapefiles/vt_national.shp") %>%
   st_crop(shp)
 
 # dengue, regions, climate, landuse, connectivity data
@@ -227,7 +227,10 @@ map1 = shp %>%
   scale_fill_gradientn(colors=rev(viridisLite::mako(200)), na.value="white", name="Relative\nrisk") +
   geom_sf(data = shp_vt, fill=NA, col="grey20", size=0.25) +
   theme(strip.text = element_text(size=11.5), plot.title=element_text(size=12.5), legend.title = element_text(size=12),
-        legend.text = element_text(size=11))
+        legend.text = element_text(size=11)) +
+  labs(tag = "a") +
+  theme(plot.tag = element_text(size=22, face="bold"),
+        plot.tag.position = c(.02, .95)) #+
 
 # only show slopes where p < 0.05
 lims = (exp(mnx$tmean_fac_slope)-1)*100
@@ -248,7 +251,11 @@ map2 = shp %>%
   geom_sf(data = shp_vt, fill=NA, col="grey20", size=0.25) +
   scale_fill_gradientn(colors=rev(pals::brewer.rdylbu(200)), na.value="white", limits=lims, name="Risk\nchange\n(%)", breaks=c(-50, -25, 0, 25, 50)) +
   #scale_fill_gradient2(high=scales::muted("blue"), low=scales::muted("red"), midpoint=0, name="Annual\nrisk\nchange\n(%)", na.value="grey95") +
-  theme(strip.text = element_blank(), plot.title=element_text(size=12.5), legend.title = element_text(size=12), legend.text = element_text(size=11))
+  theme(strip.text = element_blank(), plot.title=element_text(size=12.5), legend.title = element_text(size=12), legend.text = element_text(size=11)) +
+  labs(tag = "b") +
+  theme(plot.tag = element_text(size=22, face="bold"),
+        plot.tag.position = c(.02, .95)) #+
+
 
 
 
@@ -329,18 +336,31 @@ p3 = clim_for_test %>%
         legend.text = element_text(size=11)) +
   scale_color_viridis_d(begin=0.05, end=0.65, direction=-1, name="Time period") +
   xlab("Dengue month (May to April)") +
-  ylab("Dengue risk (mean ± 95% CI)") 
+  ylab("Dengue risk\n(mean ± 95% CI)") +
+  labs(tag = "c") +
+  theme(plot.tag = element_text(size=22, face="bold"),
+        plot.tag.position = c(.02, .95)) #+
+ # coord_cartesian(xlim = c(50, 350), ylim = c(10, 35), clip = "off")
+
+# p3 = gridExtra::grid.arrange(p3)
+# p3 = ggpubr::as_ggplot(p3) +
+#   cowplot::draw_plot_label(label = c("c"),
+#                            fontface = "bold", size = 20,
+#                            x = 0.01, y = 0.98)
 
 
 # ----------- save ------------
 
 # combine with maps and save
 library(patchwork)
-comb = map1 + map2 + p3
-comb = comb + plot_layout(guides = "collect", heights=c(1.2, 1.2, 1))# + plot_annotation(tag_levels = 'a') + theme(plot.tag = element_text(size = 20, face = "bold"))
+comb = map1 + map2 + p3 #+ plot_annotation(tag_levels = 'a') + theme(plot.tag = element_text(size = 20, face = "bold"))
+comb = comb + plot_layout(guides = "collect", heights=c(1.3, 1.3, 1)) 
+
 ggsave(comb, file="./output/figures/Figure5_TemperatureProjections_LongTerm_full.jpg", device="jpg", units="in", width=18, height=10, dpi=600, scale=0.65)
 
-  
+ggsave(comb, file="./output/figures/Figure5_TemperatureProjections_LongTerm_full.pdf", device="pdf", units="in", width=18, height=10, scale=0.65)
+
+
 
 
 # -------------- patterns of temperature change ----------------

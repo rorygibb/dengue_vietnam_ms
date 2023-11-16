@@ -34,7 +34,7 @@ st_crs(shp_prov) = st_crs(shp)
 shp_prov = st_crop(shp_prov, shp)
 rr = read.csv("./data/shapefiles/regions_lookup.csv")
 shp_prov = left_join(shp_prov, rr[ , c("provincena", "region")])
-shp_vt = st_read("./data/shapefiles/gadm36_VNM_0.shp") %>%
+shp_vt = st_read("./data/shapefiles/vt_national.shp") %>%
   st_crop(shp)
 
 # dengue, regions, climate, landuse, connectivity data
@@ -235,7 +235,8 @@ map_plot = shp %>%
   ggplot() + 
   geom_sf(aes(fill=value), col=NA) +
   geom_sf(data=shp_vt, fill=NA, col="grey20") + 
-  scale_fill_gradientn(colors=rev(colorRampPalette(RColorBrewer::brewer.pal(11, "BrBG"))(200)), limits=lims, na.value="grey97", name="u+v") + 
+  #scale_fill_gradientn(colors=rev(colorRampPalette(RColorBrewer::brewer.pal(11, "BrBG"))(200)), limits=lims, na.value="grey97", name="u+v") + 
+  scale_fill_gradientn(colors=rev(colorRampPalette(MetBrewer::met.brewer("Benedictus", 11))(200)), na.value="white", limits=lims, name="u+v") +
   maptheme +
   theme(legend.position = c(0.2, 0.4), legend.title=element_blank(), legend.text = element_text(size=11)) +
   facet_wrap(~variable)
@@ -247,7 +248,7 @@ pc = ggpubr::as_ggplot(pc)  +
   cowplot::draw_plot_label(label = c("a", "b", "c", "d", "e"), 
                            fontface = "bold", size = 22.5, 
                            x = c(0.115, 0.115, 0.34, 0.56, 0.77), y = c(0.985, 0.48, 0.96, 0.93, 0.93))
-ggsave(pc, file="./output/figures/SuppFigure_TemperatureAnnualResults.jpg", device="jpg", width=12,  height=6, units="in", dpi=300, scale=1.1)
+ggsave(pc, file="./output/figures/SuppFigure_TemperatureAnnualResults.jpg", device="jpg", width=12,  height=6, units="in", dpi=600, scale=1.1)
 
 
 

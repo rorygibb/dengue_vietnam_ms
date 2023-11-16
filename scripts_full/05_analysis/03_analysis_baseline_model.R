@@ -28,7 +28,7 @@ st_crs(shp_prov) = st_crs(shp)
 shp_prov = st_crop(shp_prov, shp)
 rr = read.csv("./data/shapefiles/regions_lookup.csv")
 shp_prov = left_join(shp_prov, rr[ , c("provincena", "region")])
-shp_vt = st_read("./data/shapefiles/gadm36_VNM_0.shp") %>%
+shp_vt = st_read("./data/shapefiles/vt_national.shp") %>%
   st_crop(shp)
 
 # dengue, regions, climate, landuse, connectivity data
@@ -164,7 +164,8 @@ p3 = shp %>%
   ggplot() + 
   geom_sf(aes(fill=mean), col=NA) + 
   geom_sf(data=shp_prov, fill=NA, color="grey60", alpha=0.5, size=0.25) +
-  scale_fill_gradientn(colors=rev(colorRampPalette(RColorBrewer::brewer.pal(11, "BrBG"))(200)), limits=lims, na.value="grey97", name="u+v") + 
+  #scale_fill_gradientn(colors=rev(colorRampPalette(RColorBrewer::brewer.pal(11, "BrBG"))(200)), limits=lims, na.value="grey97", name="u+v") + 
+  scale_fill_gradientn(colors=rev(colorRampPalette(MetBrewer::met.brewer("Benedictus", 11))(200)), na.value="white", limits=lims, name="u+v") +
   maptheme + 
   theme(legend.position=c(0.01, 0.5), legend.title=element_text(size=12), legend.text=element_text(size=9.5),
         legend.background = element_blank())
@@ -186,31 +187,31 @@ ggsave(pc, file="./output/figures/SuppFigure_BaselineModel.jpg", device="jpg", u
 
 
 
-# =============== visualise interannual ranefs variation ================
-
-dy = data.frame(year = 1998:2020) %>%
-  dplyr::mutate(dengue_year = paste(year, year+1, sep="-"))
-
-lims = c(-8, 8)
-ranefs_dyn = shp %>%
-  full_join(
-    bym %>%
-      dplyr::filter(component == "uv_joint") %>%
-      dplyr::select(areaid, mean, year)
-  ) %>%
-  dplyr::mutate(
-    mean = replace(mean, mean < lims[1], lims[1]),
-    mean = replace(mean, mean > lims[2], lims[2])
-  ) %>%
-  dplyr::filter(!is.na(year)) %>%
-  dplyr::left_join(dy) %>%
-  ggplot() +
-  geom_sf(aes(fill=mean), col=NA) + 
-  geom_sf(data=shp_vt, fill=NA, color="grey60", alpha=0.5, size=0.25) +
-  scale_fill_gradientn(colors=rev(colorRampPalette(RColorBrewer::brewer.pal(11, "BrBG"))(200)), limits=lims, na.value="grey97", name="u+v") + 
-  maptheme + 
-  theme(legend.title=element_text(size=12), legend.text=element_text(size=10)) +
-  facet_wrap(~dengue_year, nrow=3)
-ggsave(ranefs_dyn, file="./output/figures/SuppFigure_SpatiotemporalRanefs.jpg", device="jpg", units="in", width=14, height=9, dpi=600)
-
-
+# # =============== visualise interannual ranefs variation ================
+# 
+# dy = data.frame(year = 1998:2020) %>%
+#   dplyr::mutate(dengue_year = paste(year, year+1, sep="-"))
+# 
+# lims = c(-8, 8)
+# ranefs_dyn = shp %>%
+#   full_join(
+#     bym %>%
+#       dplyr::filter(component == "uv_joint") %>%
+#       dplyr::select(areaid, mean, year)
+#   ) %>%
+#   dplyr::mutate(
+#     mean = replace(mean, mean < lims[1], lims[1]),
+#     mean = replace(mean, mean > lims[2], lims[2])
+#   ) %>%
+#   dplyr::filter(!is.na(year)) %>%
+#   dplyr::left_join(dy) %>%
+#   ggplot() +
+#   geom_sf(aes(fill=mean), col=NA) + 
+#   geom_sf(data=shp_vt, fill=NA, color="grey60", alpha=0.5, size=0.25) +
+#   scale_fill_gradientn(colors=rev(colorRampPalette(RColorBrewer::brewer.pal(11, "BrBG"))(200)), limits=lims, na.value="grey97", name="u+v") + 
+#   maptheme + 
+#   theme(legend.title=element_text(size=12), legend.text=element_text(size=10)) +
+#   facet_wrap(~dengue_year, nrow=3)
+# ggsave(ranefs_dyn, file="./output/figures/SuppFigure_SpatiotemporalRanefs.jpg", device="jpg", units="in", width=14, height=9, dpi=600)
+# 
+# 
